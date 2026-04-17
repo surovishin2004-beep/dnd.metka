@@ -2,183 +2,387 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Фиксация локации ДНД</title>
+    <!-- VK Bridge -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
+        :root {
+            --bg-color: #19191a;
+            --card-bg: #ffffff;
+            --text-primary: #000000;
+            --text-secondary: #656565;
+            --text-tertiary: #939393;
+            --accent: #2688eb;
+            --accent-hover: #1e76d1;
+            --success: #4bb34b;
+            --error-bg: #ffe6e6;
+            --error-text: #d00000;
+            --success-bg: #e6f9e6;
+            --success-text: #0a8022;
+            --border-radius: 16px;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #141414;
+                --card-bg: #222222;
+                --text-primary: #ffffff;
+                --text-secondary: #a0a0a0;
+                --text-tertiary: #6b6b6b;
+                --error-bg: #3a1a1a;
+                --error-text: #ff6b6b;
+                --success-bg: #1a3a1a;
+                --success-text: #6bff6b;
+                --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+            }
+        }
+
         body {
-            background: #1e2a3a;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
             min-height: 100vh;
-            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            -webkit-font-smoothing: antialiased;
         }
+
         .container {
-            max-width: 400px;
-            width: 100%;
-            background: white;
-            border-radius: 28px;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             padding: 32px 24px;
+            max-width: 360px;
+            width: 100%;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
         }
-        h1 {
+
+        .logo {
             font-size: 28px;
             font-weight: 700;
-            margin-bottom: 12px;
-            color: #1e2a3a;
-        }
-        .desc {
-            font-size: 15px;
-            color: #5a6874;
-            margin-bottom: 32px;
-            line-height: 1.4;
-        }
-        .btn-geo {
-            background: #2c7be5;
-            border: none;
-            border-radius: 60px;
-            padding: 16px 20px;
-            width: 100%;
-            font-size: 18px;
-            font-weight: 600;
-            color: white;
+            color: var(--text-primary);
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 28px;
+        }
+
+        .btn-send {
+            background-color: var(--accent);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 100%;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
         }
-        .btn-geo:active {
-            transform: scale(0.97);
-            background: #1a68d1;
+
+        .btn-send:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(38, 136, 235, 0.3);
         }
-        .btn-geo:disabled {
-            background: #a0b3c9;
-            transform: none;
+
+        .btn-send:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
         }
+
+        .btn-icon {
+            font-size: 18px;
+        }
+
         .status {
-            margin-top: 24px;
-            padding: 12px;
-            border-radius: 16px;
+            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: 10px;
             font-size: 14px;
-            background: #f0f4f8;
-            color: #2c3e50;
+            line-height: 1.4;
+            display: none;
+            animation: fadeIn 0.3s ease;
         }
-        .success {
-            background: #d4edda;
-            color: #155724;
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
+
+        .status.success {
+            display: block;
+            background-color: var(--success-bg);
+            color: var(--success-text);
         }
+
+        .status.error {
+            display: block;
+            background-color: var(--error-bg);
+            color: var(--error-text);
+        }
+
+        .status.loading {
+            display: block;
+            background-color: transparent;
+            color: var(--text-secondary);
+        }
+
         .footer {
-            margin-top: 28px;
+            margin-top: 24px;
             font-size: 12px;
-            color: #8a9aa8;
+            color: var(--text-tertiary);
+            line-height: 1.4;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .user-id-display {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .user-id-display {
+                border-top-color: rgba(255, 255, 255, 0.06);
+            }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>🛡️ ДНД</h1>
-    <div class="desc">Нажмите кнопку, чтобы передать своё текущее местоположение</div>
-    <button id="geoBtn" class="btn-geo">📍 Отправить местоположение</button>
-    <div id="status" class="status">Готово к отправке</div>
-    <div class="footer">Данные отправляются только с вашего разрешения</div>
-</div>
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">🛡️</div>
+            <span>ДНД</span>
+        </div>
+        <p class="subtitle">
+            Нажмите кнопку, чтобы передать своё текущее местоположение
+        </p>
 
-<script>
-    // Получаем user_id из URL (?user_id=123456789)
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('user_id');
-    const BOT_API_URL = 'http://incorrectly-beautified-fieldfare.cloudpub.ru/api/geo';  // ЗАМЕНИТЕ на реальный адрес бота
+        <button id="sendBtn" class="btn-send" onclick="sendLocation()">
+            <span class="btn-icon">📍</span>
+            <span id="btnText">Отправить местоположение</span>
+        </button>
 
-    const btn = document.getElementById('geoBtn');
-    const statusDiv = document.getElementById('status');
+        <div id="status" class="status"></div>
 
-    if (!userId) {
-        statusDiv.innerHTML = '❌ Ошибка: не передан ID пользователя.';
-        statusDiv.classList.add('error');
-        btn.disabled = true;
-    }
+        <div class="footer">
+            Данные отправляются только с вашего разрешения
+        </div>
 
-    async function sendLocation(position) {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        const accuracy = position.coords.accuracy;
+        <div class="user-id-display" id="userIdDisplay"></div>
+    </div>
 
-        statusDiv.innerHTML = '⏳ Отправка координат...';
-        statusDiv.classList.remove('success', 'error');
+    <script>
+        // ============================================
+        // 🔑 ЗАМЕНИТЕ НА ID ВАШЕГО СООБЩЕСТВА (без минуса)
+        // Пример: если ссылка vk.com/club123456, то ID = 123456
+        // ============================================
+        const COMMUNITY_ID = 123456789; 
 
-        try {
-            const response = await fetch(BOT_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_id: parseInt(userId),
-                    lat: lat,
-                    lon: lon,
-                    acc: accuracy
-                })
-            });
-            const result = await response.json();
-            if (result.success) {
-                statusDiv.innerHTML = '✅ Координаты приняты! Смена ДНД активна. Страница закроется через 2 секунды.';
-                statusDiv.classList.add('success');
-                btn.disabled = true;
-                setTimeout(() => window.close(), 2000);
+        // Получаем user_id из URL параметров
+        function getUserId() {
+            const params = new URLSearchParams(window.location.search);
+            const uid = params.get('user_id');
+            
+            const displayEl = document.getElementById('userIdDisplay');
+            if (uid) {
+                displayEl.textContent = `Боец ID: ${uid}`;
+                return uid;
             } else {
-                statusDiv.innerHTML = '❌ Ошибка: ' + (result.error || 'не удалось сохранить');
-                statusDiv.classList.add('error');
-                btn.disabled = false;
+                displayEl.textContent = '⚠️ user_id не указан в URL';
+                return null;
             }
-        } catch (err) {
-            statusDiv.innerHTML = '❌ Ошибка соединения с сервером. Проверьте интернет.';
-            statusDiv.classList.add('error');
-            btn.disabled = false;
         }
-    }
 
-    function handleError(error) {
-        let msg = '';
-        switch(error.code) {
-            case error.PERMISSION_DENIED: msg = 'Доступ к геолокации запрещён. Разрешите в настройках.'; break;
-            case error.POSITION_UNAVAILABLE: msg = 'Не удалось определить местоположение.'; break;
-            case error.TIMEOUT: msg = 'Превышено время ожидания.'; break;
-            default: msg = 'Неизвестная ошибка.';
-        }
-        statusDiv.innerHTML = '❌ ' + msg;
-        statusDiv.classList.add('error');
-        btn.disabled = false;
-    }
+        const userId = getUserId();
 
-    btn.addEventListener('click', () => {
-        if (!userId) return;
-        if (!navigator.geolocation) {
-            statusDiv.innerHTML = '❌ Ваш браузер не поддерживает геолокацию.';
-            statusDiv.classList.add('error');
-            return;
+        // Инициализация VK Bridge
+        (async function initBridge() {
+            try {
+                await window.vkBridge.send('VKWebAppInit');
+                console.log('✅ VK Bridge инициализирован');
+            } catch (err) {
+                console.warn('⚠️ VK Bridge не инициализирован (возможно, открыто вне VK):', err);
+            }
+        })();
+
+        function setStatus(type, message) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status ' + type;
+            statusEl.textContent = message;
         }
-        btn.disabled = true;
-        statusDiv.innerHTML = '📍 Запрашиваем разрешение и координаты...';
-        statusDiv.classList.remove('success', 'error');
-        navigator.geolocation.getCurrentPosition(sendLocation, handleError, {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
-        });
-    });
-</script>
+
+        function clearStatus() {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status';
+            statusEl.textContent = '';
+        }
+
+        function setButtonState(state) {
+            const btn = document.getElementById('sendBtn');
+            const btnText = document.getElementById('btnText');
+
+            btn.disabled = state === 'loading';
+
+            switch (state) {
+                case 'loading':
+                    btnText.innerHTML = '<span class="spinner"></span> Определяем...';
+                    break;
+                case 'sending':
+                    btnText.innerHTML = '<span class="spinner"></span> Отправляем...';
+                    break;
+                case 'success':
+                    btnText.innerHTML = '✅ Отправлено';
+                    break;
+                case 'error':
+                    btnText.innerHTML = '📍 Отправить местоположение';
+                    break;
+                default:
+                    btnText.innerHTML = '📍 Отправить местоположение';
+            }
+        }
+
+        async function sendLocation() {
+            if (!userId) {
+                setStatus('error', '❌ Ошибка: user_id не указан в ссылке');
+                return;
+            }
+
+            setButtonState('loading');
+            clearStatus();
+
+            try {
+                // 1️⃣ Запрашиваем геолокацию
+                setStatus('loading', '📡 Определяем координаты...');
+
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 0
+                    });
+                });
+
+                const { latitude, longitude, accuracy } = position.coords;
+
+                // 2️⃣ Отправляем через VK Bridge
+                setStatus('loading', '📤 Отправляем в бота...');
+                setButtonState('sending');
+
+                await window.vkBridge.send('VKWebAppCallAPIMethod', {
+                    method: 'messages.send',
+                    params: {
+                        peer_id: COMMUNITY_ID,
+                        lat: latitude.toString(),
+                        lon: longitude.toString(),
+                        random_id: Math.floor(Math.random() * 1000000000),
+                        message: `📍 Геопозиция от бойца ${userId}`
+                    }
+                });
+
+                // 3️⃣ Успех
+                setStatus('success', '✅ Местоположение зафиксировано!');
+                setButtonState('success');
+
+                // Закрываем Mini App через 1.5 секунды
+                setTimeout(async () => {
+                    try {
+                        await window.vkBridge.send('VKWebAppClose');
+                    } catch (e) {
+                        console.log('Не удалось закрыть окно');
+                    }
+                }, 1500);
+
+            } catch (error) {
+                console.error('Geo Error:', error);
+                
+                let errorMsg = '❌ ';
+                
+                if (error.code === 1) {
+                    errorMsg += 'Доступ к геолокации запрещён. Разрешите в настройках браузера/VK.';
+                } else if (error.code === 2) {
+                    errorMsg += 'Геолокация недоступна на этом устройстве.';
+                } else if (error.code === 3) {
+                    errorMsg += 'Истекло время ожидания. Проверьте интернет.';
+                } else if (error.message && error.message.includes('VKWebAppCallAPIMethod')) {
+                    errorMsg += 'Ошибка отправки. Проверьте подключение к интернету.';
+                } else {
+                    errorMsg += error.message || 'Неизвестная ошибка.';
+                }
+
+                setStatus('error', errorMsg);
+                setButtonState('error');
+            }
+        }
+
+        // Поддержка тёмной темы через VK Bridge
+        (async function applyTheme() {
+            try {
+                const theme = await window.vkBridge.send('VKWebAppGetLaunchParams');
+                if (theme && theme.scheme) {
+                    document.body.classList.toggle('dark-theme', theme.scheme === 'client_dark');
+                }
+            } catch (e) {
+                console.log('Не удалось определить тему');
+            }
+        })();
+    </script>
 </body>
 </html>
