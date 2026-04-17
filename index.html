@@ -2,312 +2,183 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Мои координаты</title>
-    <!-- Подключение шрифта VK Sans (опционально, для лучшего соответствия стилям VK) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Фиксация локации ДНД</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
-            background: #f2f3f5;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #1e2a3a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 16px;
+            padding: 20px;
         }
-
         .container {
             max-width: 400px;
             width: 100%;
-            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            padding: 24px 20px 32px;
+            background: white;
+            border-radius: 28px;
+            padding: 32px 24px;
             text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-
         h1 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #000000;
+            font-size: 28px;
+            font-weight: 700;
             margin-bottom: 12px;
+            color: #1e2a3a;
         }
-
-        .description {
-            font-size: 14px;
-            color: #6c6f78;
+        .desc {
+            font-size: 15px;
+            color: #5a6874;
             margin-bottom: 32px;
             line-height: 1.4;
         }
-
-        .vk-button {
-            background: #0077ff;
+        .btn-geo {
+            background: #2c7be5;
             border: none;
-            border-radius: 12px;
-            padding: 12px 24px;
+            border-radius: 60px;
+            padding: 16px 20px;
             width: 100%;
-            font-size: 16px;
-            font-weight: 500;
-            font-family: inherit;
+            font-size: 18px;
+            font-weight: 600;
             color: white;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-
-        .vk-button:active {
-            opacity: 0.8;
-            transform: scale(0.98);
+        .btn-geo:active {
+            transform: scale(0.97);
+            background: #1a68d1;
         }
-
-        .vk-button:disabled {
-            background: #b8c1cc;
-            cursor: not-allowed;
-            opacity: 0.7;
+        .btn-geo:disabled {
+            background: #a0b3c9;
             transform: none;
+            cursor: not-allowed;
         }
-
-        .location-info {
-            margin-top: 28px;
-            background: #f5f7fa;
-            border-radius: 16px;
-            padding: 16px;
-            text-align: left;
-            font-size: 14px;
-            word-break: break-word;
-            transition: all 0.2s;
-        }
-
-        .location-info.hidden {
-            display: none;
-        }
-
-        .coord-label {
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .coord-value {
-            font-family: monospace;
-            font-size: 15px;
-            color: #0077ff;
-            background: #eef2fa;
-            padding: 6px 10px;
-            border-radius: 10px;
-            margin: 4px 0 12px 0;
-        }
-
-        .error-message {
-            color: #e64646;
-            font-size: 13px;
-            margin-top: 12px;
-            padding: 8px;
-            background: #ffeeee;
-            border-radius: 10px;
-        }
-
         .status {
-            font-size: 13px;
-            color: #6c6f78;
-            margin-top: 16px;
+            margin-top: 24px;
+            padding: 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            background: #f0f4f8;
+            color: #2c3e50;
         }
-
-        hr {
-            margin: 16px 0;
-            border: none;
-            border-top: 1px solid #e7e8ec;
+        .success {
+            background: #d4edda;
+            color: #155724;
         }
-
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
         .footer {
+            margin-top: 28px;
             font-size: 12px;
-            color: #a0a4ad;
-            margin-top: 20px;
+            color: #8a9aa8;
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>📍 Геолокация</h1>
-    <div class="description">
-        Нажмите кнопку, чтобы передать ваше текущее местоположение
-    </div>
-
-    <button id="getLocationBtn" class="vk-button">
-        📍 Отправить местоположение
-    </button>
-
-    <div id="locationCard" class="location-info hidden">
-        <div class="coord-label">📍 Широта (latitude)</div>
-        <div id="latValue" class="coord-value">—</div>
-
-        <div class="coord-label">🗺️ Долгота (longitude)</div>
-        <div id="lonValue" class="coord-value">—</div>
-
-        <div class="coord-label">🎯 Точность (м)</div>
-        <div id="accuracyValue" class="coord-value">—</div>
-
-        <div id="errorBlock" class="error-message hidden"></div>
-    </div>
-
-    <div id="statusMsg" class="status"></div>
-    <div class="footer">VK Mini App · данные отправляются только с вашего разрешения</div>
+    <h1>🛡️ ДНД</h1>
+    <div class="desc">Нажмите кнопку, чтобы передать своё текущее местоположение</div>
+    <button id="geoBtn" class="btn-geo">📍 Отправить местоположение</button>
+    <div id="status" class="status">Готово к отправке</div>
+    <div class="footer">Данные отправляются только с вашего разрешения</div>
 </div>
 
 <script>
-    // Инициализация VK Bridge (опционально, но рекомендуется для корректной работы внутри VK)
-    (function initVKBridge() {
-        if (typeof window.vkBridge === 'undefined') {
-            // Динамически подключаем VK Bridge, если он ещё не загружен
-            const script = document.createElement('script');
-            script.src = "https://vk.com/js/api/bridge.js";
-            script.onload = () => {
-                if (window.vkBridge) {
-                    window.vkBridge.send("VKWebAppInit", {});
-                }
-            };
-            document.head.appendChild(script);
-        } else {
-            window.vkBridge.send("VKWebAppInit", {});
-        }
-    })();
+    // Получаем user_id из URL (?user_id=123456789)
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user_id');
+    const BOT_API_URL = 'https://ВАШ_СЕРВЕР.ru:5000/api/geo';  // ЗАМЕНИТЕ на реальный адрес бота
 
-    // DOM элементы
-    const getLocationBtn = document.getElementById('getLocationBtn');
-    const locationCard = document.getElementById('locationCard');
-    const latValueSpan = document.getElementById('latValue');
-    const lonValueSpan = document.getElementById('lonValue');
-    const accuracyValueSpan = document.getElementById('accuracyValue');
-    const errorBlock = document.getElementById('errorBlock');
-    const statusMsgDiv = document.getElementById('statusMsg');
+    const btn = document.getElementById('geoBtn');
+    const statusDiv = document.getElementById('status');
 
-    // Функция для отображения ошибок
-    function showError(message) {
-        errorBlock.textContent = message;
-        errorBlock.classList.remove('hidden');
-        statusMsgDiv.textContent = '❌ Ошибка получения координат';
-        statusMsgDiv.style.color = '#e64646';
-        // Скрываем карточку с данными, если она была показана
-        locationCard.classList.add('hidden');
+    if (!userId) {
+        statusDiv.innerHTML = '❌ Ошибка: не передан ID пользователя.';
+        statusDiv.classList.add('error');
+        btn.disabled = true;
     }
 
-    // Скрыть ошибку
-    function hideError() {
-        errorBlock.classList.add('hidden');
-        errorBlock.textContent = '';
-    }
+    async function sendLocation(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const accuracy = position.coords.accuracy;
 
-    // Успешное получение координат
-    function showCoordinates(position) {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        const accuracy = position.coords.accuracy; // точность в метрах
+        statusDiv.innerHTML = '⏳ Отправка координат...';
+        statusDiv.classList.remove('success', 'error');
 
-        // Заполняем данные
-        latValueSpan.textContent = latitude.toFixed(6);
-        lonValueSpan.textContent = longitude.toFixed(6);
-        accuracyValueSpan.textContent = Math.round(accuracy) + ' м';
-
-        // Показываем карточку с координатами
-        locationCard.classList.remove('hidden');
-        hideError();
-
-        // Статус успеха
-        statusMsgDiv.innerHTML = '✅ Координаты успешно получены!';
-        statusMsgDiv.style.color = '#2c974b';
-
-        // Дополнительно: можно "отправить" координаты на ваш сервер или в лог VK
-        // Пример отправки через VK Bridge (если нужно сохранить или отправить другу)
         try {
-            if (window.vkBridge) {
-                // Имитация отправки события (по желанию, можно убрать)
-                window.vkBridge.send("VKWebAppStorageSet", { key: "last_lat", value: String(latitude) });
-                window.vkBridge.send("VKWebAppStorageSet", { key: "last_lon", value: String(longitude) });
-                console.log("[VK Bridge] Координаты сохранены в storage");
+            const response = await fetch(BOT_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: parseInt(userId),
+                    lat: lat,
+                    lon: lon,
+                    acc: accuracy
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                statusDiv.innerHTML = '✅ Координаты приняты! Смена ДНД активна. Страница закроется через 2 секунды.';
+                statusDiv.classList.add('success');
+                btn.disabled = true;
+                setTimeout(() => window.close(), 2000);
+            } else {
+                statusDiv.innerHTML = '❌ Ошибка: ' + (result.error || 'не удалось сохранить');
+                statusDiv.classList.add('error');
+                btn.disabled = false;
             }
-        } catch (e) {
-            console.warn("Bridge не доступен для сохранения", e);
+        } catch (err) {
+            statusDiv.innerHTML = '❌ Ошибка соединения с сервером. Проверьте интернет.';
+            statusDiv.classList.add('error');
+            btn.disabled = false;
         }
     }
 
-    // Обработка ошибок геолокации
-    function handleGeoError(error) {
-        let errorMessage = '';
+    function handleError(error) {
+        let msg = '';
         switch(error.code) {
-            case error.PERMISSION_DENIED:
-                errorMessage = 'Доступ к геолокации запрещён. Разрешите доступ в настройках браузера или приложения VK.';
-                break;
-            case error.POSITION_UNAVAILABLE:
-                errorMessage = 'Не удалось определить местоположение. Проверьте сигнал GPS/сеть.';
-                break;
-            case error.TIMEOUT:
-                errorMessage = 'Время ожидания истекло. Попробуйте ещё раз.';
-                break;
-            default:
-                errorMessage = 'Произошла неизвестная ошибка. Попробуйте позже.';
-                break;
+            case error.PERMISSION_DENIED: msg = 'Доступ к геолокации запрещён. Разрешите в настройках.'; break;
+            case error.POSITION_UNAVAILABLE: msg = 'Не удалось определить местоположение.'; break;
+            case error.TIMEOUT: msg = 'Превышено время ожидания.'; break;
+            default: msg = 'Неизвестная ошибка.';
         }
-        showError(errorMessage);
-        getLocationBtn.disabled = false;
+        statusDiv.innerHTML = '❌ ' + msg;
+        statusDiv.classList.add('error');
+        btn.disabled = false;
     }
 
-    // Основная функция запроса геопозиции
-    function requestLocation() {
-        // Сброс предыдущего состояния
-        hideError();
-        statusMsgDiv.innerHTML = '⏳ Запрашиваем местоположение...';
-        statusMsgDiv.style.color = '#6c6f78';
-        getLocationBtn.disabled = true;
-
-        // Проверяем поддержку Geolocation API
+    btn.addEventListener('click', () => {
+        if (!userId) return;
         if (!navigator.geolocation) {
-            showError('Ваш браузер не поддерживает геолокацию. Используйте современный браузер или приложение VK.');
-            getLocationBtn.disabled = false;
-            statusMsgDiv.innerHTML = '⚠️ Геолокация не поддерживается';
+            statusDiv.innerHTML = '❌ Ваш браузер не поддерживает геолокацию.';
+            statusDiv.classList.add('error');
             return;
         }
-
-        // Опции запроса (более точное позиционирование)
-        const options = {
-            enableHighAccuracy: true,      // запрашивать максимально точные данные (GPS)
-            timeout: 15000,                // максимум 15 секунд ожидания
-            maximumAge: 0                 // не использовать кешированные данные
-        };
-
-        // Запрашиваем текущую позицию
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                // Успешно
-                showCoordinates(position);
-                getLocationBtn.disabled = false;
-            },
-            (error) => {
-                handleGeoError(error);
-                getLocationBtn.disabled = false;
-            },
-            options
-        );
-    }
-
-    // Обработчик нажатия на кнопку
-    getLocationBtn.addEventListener('click', requestLocation);
-
-    // Дополнительно: если приложение открыто внутри WebView VK, иногда требуется инициализировать через VKWebAppInit
-    // Уже вызвано выше. Также можно показать подсказку по адаптации тёмной темы (необязательно)
-    // Для лучшего UX при повторных нажатиях, снимаем блокировку, если произошла ошибка ранее
+        btn.disabled = true;
+        statusDiv.innerHTML = '📍 Запрашиваем разрешение и координаты...';
+        statusDiv.classList.remove('success', 'error');
+        navigator.geolocation.getCurrentPosition(sendLocation, handleError, {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        });
+    });
 </script>
 </body>
 </html>
